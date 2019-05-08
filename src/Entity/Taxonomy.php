@@ -53,28 +53,20 @@ class Taxonomy
     private $sortorder = 0;
 
     /**
+     * Set dynamically during view generation
+     *
      * @var string
      */
     private $link;
 
-    public function __construct()
+    public function __construct(string $type, string $slug, ?string $name = null, int $sortorder = 0)
     {
+        $this->setType($type);
+        $this->setName($name ?: $slug);
+        $this->setSlug($slug);
+        $this->setSortorder($sortorder);
+
         $this->content = new ArrayCollection();
-    }
-
-    /**
-     * @return Taxonomy
-     */
-    public static function factory(string $type, string $slug, ?string $name = null, int $sortorder = 0): self
-    {
-        $taxonomy = new self();
-
-        $taxonomy->setType($type);
-        $taxonomy->setSlug($slug);
-        $taxonomy->setName($name ?: $slug);
-        $taxonomy->setSortorder($sortorder);
-
-        return $taxonomy;
     }
 
     public function getId(): ?int
@@ -108,7 +100,7 @@ class Taxonomy
         return $this;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -120,7 +112,7 @@ class Taxonomy
         return $this;
     }
 
-    public function getSlug(): ?string
+    public function getSlug(): string
     {
         return $this->slug;
     }
@@ -128,6 +120,9 @@ class Taxonomy
     public function setSlug(string $slug): self
     {
         $this->slug = Str::slug($slug);
+        if (! $this->getName()) {
+            $this->setName($slug);
+        }
 
         return $this;
     }

@@ -6,6 +6,7 @@ namespace Bolt\Factory;
 
 use Bolt\Configuration\Config;
 use Bolt\Configuration\FileLocations;
+use Bolt\Configuration\PathResolver;
 use Bolt\Controller\UserTrait;
 use Bolt\Entity\Media;
 use Bolt\Repository\MediaRepository;
@@ -25,9 +26,6 @@ class MediaFactory
     /** @var MediaRepository */
     private $mediaRepository;
 
-    /** @var Config */
-    private $config;
-
     /** @var Reader */
     private $exif;
 
@@ -37,15 +35,23 @@ class MediaFactory
     /** @var FileLocations */
     private $fileLocations;
 
-    public function __construct(Config $config, FileLocations $fileLocations, MediaRepository $mediaRepository, TokenStorageInterface $tokenStorage)
-    {
-        $this->config = $config;
+    /** @var PathResolver */
+    private $pathResolver;
+
+    public function __construct(
+        PathResolver $pathResolver,
+        FileLocations $fileLocations,
+        MediaRepository $mediaRepository,
+        TokenStorageInterface $tokenStorage,
+        Config $config
+    ) {
+        $this->pathResolver = $pathResolver;
+        $this->fileLocations = $fileLocations;
         $this->mediaRepository = $mediaRepository;
         $this->tokenStorage = $tokenStorage;
+        $this->mediaTypes = $config->getMediaTypes();
 
         $this->exif = Reader::factory(Reader::TYPE_NATIVE);
-        $this->mediaTypes = $config->getMediaTypes();
-        $this->fileLocations = $fileLocations;
     }
 
     public function createOrUpdateMedia(SplFileInfo $file, string $fileLocation, ?string $title = null): Media
@@ -111,7 +117,7 @@ class MediaFactory
 
     public function createFromFilename(string $locationName, string $path, string $filename): Media
     {
-        $target = $this->config->getPath($locationName, true, [$path, $filename]);
+        $target = $this->pathResolver->resolve($locationName, true, [$path, $filename]);
         $file = new SplFileInfo($target, $path, $filename);
 
         return $this->createOrUpdateMedia($file, $locationName);

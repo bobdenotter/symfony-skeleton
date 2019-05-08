@@ -3,7 +3,7 @@
     <div class="tab-pane {% if loop.first %}show active{% endif %}" id="{{ group|slug }}" role="tabpanel"
          aria-labelledby="{{ group|slug }}-tab">
         {% for key, fielddefinition in record.definition.fields if fielddefinition.group == group %}
-            {% if record.hasField(key) %}
+            {% if record.hasField(key) and currentlocale %}
                 {% set field = record.getField(key)|translated(currentlocale) %}
             {% else %}
                 {% set field = field_factory(key, fielddefinition) %}
@@ -13,7 +13,17 @@
                 '@bolt/_partials/fields/' ~ fielddefinition.type ~ '.html.twig',
                 '@bolt/_partials/fields/generic.html.twig'
                 ] with { 'field' : field } %}
-
         {% endfor %}
     </div>
 {% endfor %}
+
+{#
+{% for group in form.groups if group != 'Relations' %}
+    <div class="tab-pane {% if loop.first %}show active{% endif %}" id="{{ group.slug }}" role="tabpanel"
+         aria-labelledby="{{ group.slug }}-tab">
+        {% for field in group.fields %}
+            {{ form_row(field) }}
+        {% endfor %}
+    </div>
+{% endfor %}
+#}

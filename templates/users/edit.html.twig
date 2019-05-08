@@ -11,7 +11,7 @@
 {% block main %}
 
     <div>
-        <form method="post" id="editcontent" >
+        {{ form_start(form) }}
 
             {% include '@bolt/_partials/fields/text.html.twig' with {
                 'label' : 'label.username'|trans,
@@ -63,13 +63,7 @@
 
             {# TODO: include form field with '@bolt/_partials/fields/select.html.twig' #}
             <div class="form-group">
-                <label for="user_backendTheme" class="required">Backend theme</label>
-                <select id="user_backendTheme" name="user[backendTheme]" class="form-control">
-                    <option value="default" selected="selected">The Default theme</option>
-                    <option value="dark">The Default Dark theme</option>
-                    <option value="light">A pretty Light theme</option>
-                    <option value="woordpers">WoordPers: Kinda looks like that other CMS</option>
-                </select>
+                {{ form_widget(form.backendTheme) }}
             </div>
 
             <user-theme></user-theme>
@@ -78,6 +72,6 @@
                 <i class="fa fa-save" aria-hidden="true"></i> {{ 'action.save'|trans }}
             </button>
 
-        </form>
+        {{ form_end(form) }}
     </div>
 {% endblock %}

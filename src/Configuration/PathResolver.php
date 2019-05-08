@@ -44,12 +44,12 @@ class PathResolver
     }
 
     /**
-     * @param string $root  the root path which must be absolute
-     * @param array  $paths initial path definitions
+     * @param string $projectDir the root path which must be absolute
+     * @param array  $paths      initial path definitions
      *
      * @throws ConfigurationException
      */
-    public function __construct(string $root, array $paths = [])
+    public function __construct(string $projectDir, array $paths = [])
     {
         if (empty($paths)) {
             $paths = $this->defaultPaths();
@@ -58,13 +58,13 @@ class PathResolver
             $this->define($name, $path);
         }
 
-        $root = Path::canonicalize($root);
+        $projectDir = Path::canonicalize($projectDir);
 
-        if (Path::isRelative($root)) {
+        if (Path::isRelative($projectDir)) {
             throw new ConfigurationException('Root path must be absolute.');
         }
 
-        $this->paths['root'] = $root;
+        $this->paths['root'] = $projectDir;
     }
 
     /**
@@ -169,5 +169,14 @@ class PathResolver
     public function names(): array
     {
         return array_keys($this->rawAll());
+    }
+
+    public function resolvePathToFile(string $filename, string $location = 'files'): string
+    {
+        if (mb_strpos($filename, '/') !== 0) {
+            $filename = '/' . $filename;
+        }
+        $basepath = $this->resolve($location);
+        return Path::canonicalize($basepath . '/' . $filename);
     }
 }

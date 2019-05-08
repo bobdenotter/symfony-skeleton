@@ -29,6 +29,13 @@ class FieldType extends Collection
             'sort' => '',
             'default' => '',
             'allowtwig' => false,
+            'required' => true,
+            'pattern' => null,
+            'minLength' => null,
+            'maxLength' => null,
+            'min' => null,
+            'max' => null,
+            'customValidation' => [],
         ]);
     }
 
@@ -42,5 +49,15 @@ class FieldType extends Collection
         $definition['name'] = $name;
 
         return new self($definition);
+    }
+
+    public function getName(): string
+    {
+        return $this->get('name');
+    }
+
+    public function getType(): string
+    {
+        return $this->get('type');
     }
 }

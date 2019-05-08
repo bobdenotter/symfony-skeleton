@@ -162,7 +162,11 @@ class Field implements Translatable, FieldInterface
      */
     public function getParsedValue()
     {
-        $value = $this->getValue();
+        return static::parseValue($this->getValue());
+    }
+
+    public static function parseValue($value)
+    {
         if (is_iterable($value)) {
             $count = count($value);
             if ($count === 0) {

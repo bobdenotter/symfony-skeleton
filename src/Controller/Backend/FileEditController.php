@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bolt\Controller\Backend;
 
+use Bolt\Configuration\PathResolver;
 use Bolt\Controller\CsrfTrait;
 use Bolt\Controller\TwigAwareController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -24,9 +25,15 @@ class FileEditController extends TwigAwareController implements BackendZone
 {
     use CsrfTrait;
 
-    public function __construct(CsrfTokenManagerInterface $csrfTokenManager)
+    /**
+     * @var PathResolver
+     */
+    private $pathResolver;
+
+    public function __construct(CsrfTokenManagerInterface $csrfTokenManager, PathResolver $pathResolver)
     {
         $this->csrfTokenManager = $csrfTokenManager;
+        $this->pathResolver = $pathResolver;
     }
 
     /**
@@ -35,11 +42,7 @@ class FileEditController extends TwigAwareController implements BackendZone
     public function edit(string $location, Request $request): Response
     {
         $file = $request->query->get('file');
-        if (mb_strpos($file, '/') !== 0) {
-            $file = '/' . $file;
-        }
-        $basepath = $this->config->getPath($location);
-        $filename = Path::canonicalize($basepath . '/' . $file);
+        $filename = $this->pathResolver->resolvePathToFile($file, $location);
         $contents = file_get_contents($filename);
 
         $context = [
@@ -58,31 +61,30 @@ class FileEditController extends TwigAwareController implements BackendZone
     {
         $this->validateCsrf($request, 'editfile');
 
-        $file = $request->request->get('file');
+        $filename = $request->request->get('file');
         $locationName = $request->request->get('location');
         $contents = $request->request->get('editfile');
-        $extension = Path::getExtension($file);
+        $extension = Path::getExtension($filename);
 
         $url = $urlGenerator->generate('bolt_file_edit', [
             'location' => $locationName,
-            'file' => $file,
+            'file' => $filename,
         ]);
 
         if (in_array($extension, ['yml', 'yaml'], true) && ! $this->verifyYaml($contents)) {
             $context = [
                 'location' => $locationName,
-                'file' => $file,
+                'file' => $filename,
                 'contents' => $contents,
             ];
 
             return $this->renderTemplate('@bolt/finder/editfile.html.twig', $context);
         }
 
-        $basepath = $this->config->getPath($locationName);
-        $filename = Path::canonicalize($basepath . '/' . $file);
+        $file = $this->pathResolver->resolvePathToFile($filename, $locationName);
 
         // @todo maybe replace file_put_contents with some more abstract Filesystem?
-        if (file_put_contents($filename, $contents)) {
+        if (file_put_contents($file, $contents)) {
             $this->addFlash('success', 'editfile.updated_successfully');
         } else {
             $this->addFlash('warn', 'editfile.could_not_write');

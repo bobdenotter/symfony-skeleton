@@ -2,8 +2,8 @@ twig:
     debug: '%kernel.debug%'
     strict_variables: true
     form_themes:
-        - 'form/layout.twig'
-        - 'form/fields.twig'
+        - 'form/layout.html.twig'
+        - 'form/fields.html.twig'
     paths:
         '%kernel.project_dir%/public/theme/%bolt.theme%': ''
         '%kernel.project_dir%/templates/': 'bolt'

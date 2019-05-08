@@ -29,6 +29,7 @@ class User implements UserInterface, \Serializable
      *
      * @ORM\Column(type="string")
      * @Assert\NotBlank()
+     * @Assert\Length(min=2)
      * @Groups({"get_content", "get_user"})
      */
     private $displayName;

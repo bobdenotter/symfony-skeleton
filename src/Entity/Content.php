@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tightenco\Collect\Support\Collection as LaravelCollection;
 
 /**
@@ -24,12 +25,15 @@ use Tightenco\Collect\Support\Collection as LaravelCollection;
  *     itemOperations={"get"}
  * )
  * @ApiFilter(SearchFilter::class)
+ *
  * @ORM\Entity(repositoryClass="Bolt\Repository\ContentRepository")
  * @ORM\Table(indexes={
  *     @ORM\Index(name="content_type_idx", columns={"content_type"}),
  *     @ORM\Index(name="status_idx", columns={"status"})
  * })
  * @ORM\HasLifecycleCallbacks
+ *
+ * @Assert\Callback({"Bolt\Validator\ContentValidator", "validate"})
  */
 class Content
 {
@@ -59,6 +63,7 @@ class Content
      *
      * @ORM\ManyToOne(targetEntity="Bolt\Entity\User", fetch="EAGER")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotNull
      */
     private $author;
 
@@ -66,6 +71,7 @@ class Content
      * @var string
      *
      * @ORM\Column(type="string", length=191)
+     * @Assert\Choice(callback={"Bolt\Enum\Statuses", "all"})
      */
     private $status;
 
@@ -73,6 +79,7 @@ class Content
      * @var \DateTime
      *
      * @ORM\Column(type="datetime")
+     * @Assert\NotNull
      */
     private $createdAt;
 
@@ -114,6 +121,7 @@ class Content
      *     cascade={"persist"}
      * )
      * @ORM\OrderBy({"sortorder": "ASC"})
+     * @Assert\Valid
      */
     private $fields;
 
@@ -130,8 +138,10 @@ class Content
      */
     private $taxonomies;
 
-    public function __construct()
+    public function __construct(string $contentType, User $author)
     {
+        $this->contentType = $contentType;
+        $this->author = $author;
         $this->createdAt = new \DateTime();
         $this->taxonomies = new ArrayCollection();
         $this->fields = new ArrayCollection();
@@ -169,7 +179,7 @@ class Content
         return $this->getFieldValue('slug');
     }
 
-    public function getContentType(): ?string
+    public function getContentType(): string
     {
         return $this->contentType;
     }
@@ -211,7 +221,7 @@ class Content
         return $this->author;
     }
 
-    public function setAuthor(?User $author): void
+    public function setAuthor(User $author): void
     {
         $this->author = $author;
     }
@@ -382,11 +392,9 @@ class Content
         return $this->getAuthor()->getDisplayName();
     }
 
-    public function getStatuses(): array
-    {
-        return Statuses::all();
-    }
-
+    /**
+     * @deprecated used in old status select field template
+     */
     public function getStatusOptions(): array
     {
         $options = [];
@@ -407,7 +415,7 @@ class Content
      */
     public function getTaxonomies(?string $type = null): Collection
     {
-        if ($type) {
+        if ($type !== null) {
             return $this->taxonomies->filter(
                 function (Taxonomy $taxonomy) use ($type) {
                     return $taxonomy->getType() === $type;

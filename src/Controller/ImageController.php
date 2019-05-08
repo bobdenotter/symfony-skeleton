@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bolt\Controller;
 
-use Bolt\Configuration\Config;
+use Bolt\Configuration\PathResolver;
 use League\Glide\Responses\SymfonyResponseFactory;
 use League\Glide\ServerFactory;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +13,14 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ImageController
 {
-    /** @var Config */
-    private $config;
+    /**
+     * @var PathResolver
+     */
+    private $pathResolver;
 
-    public function __construct(Config $config)
+    public function __construct(PathResolver $pathResolver)
     {
-        $this->config = $config;
+        $this->pathResolver = $pathResolver;
     }
 
     /**
@@ -29,8 +31,8 @@ class ImageController
         $location = $request->query->get('location', 'files');
         $server = ServerFactory::create([
             'response' => new SymfonyResponseFactory(),
-            'source' => $this->config->getPath($location),
-            'cache' => $this->config->getPath('cache', true, 'thumbnails'),
+            'source' => $this->pathResolver->resolve($location),
+            'cache' => $this->pathResolver->resolve('cache', true, 'thumbnails'),
         ]);
 
         if ($request->query->has('path')) {

@@ -78,9 +78,7 @@ class ContentFixtures extends BaseFixture implements DependentFixtureInterface
                     $author = $this->getRandomReference('user');
                 }
 
-                $content = new Content();
-                $content->setContentType($contentType['slug']);
-                $content->setAuthor($author);
+                $content = new Content($contentType['slug'], $author);
                 $content->setCreatedAt($this->faker->dateTimeBetween('-1 year'));
                 $content->setModifiedAt($this->faker->dateTimeBetween('-1 year'));
                 $content->setPublishedAt($this->faker->dateTimeBetween('-1 year'));

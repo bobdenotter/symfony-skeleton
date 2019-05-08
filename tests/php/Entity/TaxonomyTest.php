@@ -10,7 +10,7 @@ class TaxonomyTest extends \PHPUnit\Framework\TestCase
 {
     public function testFactory(): void
     {
-        $taxonomy = Taxonomy::factory('foo', 'bar', 'Bar');
+        $taxonomy = new Taxonomy('foo', 'bar', 'Bar');
 
         $this->assertSame('foo', $taxonomy->getType());
         $this->assertSame('bar', $taxonomy->getSlug());
@@ -19,7 +19,7 @@ class TaxonomyTest extends \PHPUnit\Framework\TestCase
 
     public function testFactoryWithSortOrder(): void
     {
-        $taxonomy = Taxonomy::factory('foo', 'Bår', 'Pømpidöm', 1000);
+        $taxonomy = new Taxonomy('foo', 'Bår', 'Pømpidöm', 1000);
 
         $this->assertSame('foo', $taxonomy->getType());
         $this->assertSame('baar', $taxonomy->getSlug());
@@ -29,7 +29,7 @@ class TaxonomyTest extends \PHPUnit\Framework\TestCase
 
     public function testFactoryWithMinimalParameters(): void
     {
-        $taxonomy = Taxonomy::factory('foo', 'Døøp');
+        $taxonomy = new Taxonomy('foo', 'Døøp');
 
         $this->assertSame('foo', $taxonomy->getType());
         $this->assertSame('doeoep', $taxonomy->getSlug());
@@ -39,7 +39,7 @@ class TaxonomyTest extends \PHPUnit\Framework\TestCase
 
     public function testSetSlug(): void
     {
-        $taxonomy = Taxonomy::factory('foo', 'bar', 'baz');
+        $taxonomy = new Taxonomy('foo', 'bar', 'baz');
 
         $taxonomy->setSlug('Qüx');
 
@@ -48,7 +48,7 @@ class TaxonomyTest extends \PHPUnit\Framework\TestCase
 
     public function testSetName(): void
     {
-        $taxonomy = Taxonomy::factory('foo', 'bar', 'baz');
+        $taxonomy = new Taxonomy('foo', 'bar', 'baz');
 
         $taxonomy->setName('Føø');
 
@@ -61,7 +61,7 @@ class TaxonomyTest extends \PHPUnit\Framework\TestCase
 
     public function testSetSortorder(): void
     {
-        $taxonomy = Taxonomy::factory('foo', 'bar', 'baz', 1000);
+        $taxonomy = new Taxonomy('foo', 'bar', 'baz', 1000);
 
         $taxonomy->setSortorder(10);
 

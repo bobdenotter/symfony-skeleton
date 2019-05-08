@@ -23,9 +23,10 @@
 
 {% block main %}
 
-    <form method="post" id="editcontent">
+    {{ form_start(form, {'id': 'editcontent'}) }}
 
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token('editrecord') }}">
+        {{ form_errors(form) }}
+
         <input type="hidden" name="_edit_locale" value="{{ currentlocale }}">
 
         {% set groups = record.definition.groups %}
@@ -42,7 +43,7 @@
 
         {% include '@bolt/content/_buttons.html.twig' %}
 
-    </form>
+    {{ form_end(form) }}
 
 {% endblock %}
 

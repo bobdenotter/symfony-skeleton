@@ -7,8 +7,12 @@ namespace spec\Bolt\Twig;
 use Bolt\Entity\Content;
 use Bolt\Entity\Relation;
 use Bolt\Repository\RelationRepository;
+use Bolt\Twig\RelatedExtension;
 use PhpSpec\ObjectBehavior;
 
+/**
+ * @mixin RelatedExtension
+ */
 class RelatedExtensionSpec extends ObjectBehavior
 {
     const ORIGIN_ID = 1;
@@ -75,7 +79,7 @@ class RelatedExtensionSpec extends ObjectBehavior
 
     function it_gets_first_related_content(Content $content, RelationRepository $relationRepository, Relation $relation, Content $related)
     {
-        $relationRepository->findFirstRelation($content, self::TEST_CT_SLUG, true, null)
+        $relationRepository->findFirstRelation($content, self::TEST_CT_SLUG, true)
             ->shouldBeCalledOnce()
             ->willReturn($relation);
 

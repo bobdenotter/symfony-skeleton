@@ -20,9 +20,6 @@ class Config
     /** @var Collection */
     protected $data;
 
-    /** @var PathResolver */
-    private $pathResolver;
-
     /** @var Stopwatch */
     private $stopwatch;
 
@@ -38,9 +35,6 @@ class Config
         $this->cache = $cache;
         $this->projectDir = $projectDir;
         $this->data = $this->getConfig();
-
-        // @todo PathResolver shouldn't be part of Config. Refactor to separate class
-        $this->pathResolver = new PathResolver($projectDir, []);
     }
 
     private function getConfig(): Collection
@@ -153,16 +147,6 @@ class Config
     public function has(string $path): bool
     {
         return Arr::has($this->data, $path);
-    }
-
-    public function getPath(string $path, bool $absolute = true, $additional = null): string
-    {
-        return $this->pathResolver->resolve($path, $absolute, $additional);
-    }
-
-    public function getPaths(): Collection
-    {
-        return $this->pathResolver->resolveAll();
     }
 
     public function getMediaTypes(): Collection

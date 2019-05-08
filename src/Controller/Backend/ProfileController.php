@@ -7,7 +7,7 @@ namespace Bolt\Controller\Backend;
 use Bolt\Common\Json;
 use Bolt\Controller\CsrfTrait;
 use Bolt\Controller\TwigAwareController;
-use Bolt\Entity\User;
+use Bolt\Form\UserFormType;
 use Doctrine\Common\Persistence\ObjectManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -59,76 +59,51 @@ class ProfileController extends TwigAwareController implements BackendZone
     {
         $user = $this->getUser();
 
+        $form = $this->createForm(UserFormType::class, $user, [
+            'action' => $this->urlGenerator->generate('bolt_profile_save'),
+            'method' => Request::METHOD_PUT,
+        ]);
+
         return $this->renderTemplate('@bolt/users/edit.html.twig', [
             'display_name' => $user->getDisplayName(),
             'user' => $user,
+            'form' => $form,
         ]);
     }
 
     /**
-     * @Route("/profile-edit", methods={"POST"}, name="bolt_profile_edit_post")
+     * @Route("/profile-edit", methods={"PUT"}, name="bolt_profile_save")
      */
     public function save(Request $request): Response
     {
-        $this->validateCsrf($request, 'profileedit');
-
         $user = $this->getUser();
-        $displayName = $user->getDisplayName();
-        $url = $this->urlGenerator->generate('bolt_profile_edit');
         $locale = Json::findScalar($request->get('locale'));
-        $newPassword = $request->get('password');
-
-        $user->setDisplayName($request->get('displayName'));
-        $user->setEmail($request->get('email'));
-        $user->setLocale($locale);
-        $user->setbackendTheme($request->get('user')['backendTheme']);
-
-        if ($this->validateUser($user, $newPassword) === false) {
-            return $this->renderTemplate('@bolt/users/edit.html.twig', [
-                'display_name' => $displayName,
-                'user' => $user,
-            ]);
-        }
-
-        if ($newPassword !== null) {
-            $user->setPassword($this->passwordEncoder->encodePassword($user, $newPassword));
-        }
-
-        $this->em->flush();
-
         $request->getSession()->set('_locale', $locale);
 
-        return new RedirectResponse($url);
-    }
+        $form = $this->createForm(UserFormType::class, $user, [
+            'action' => $this->urlGenerator->generate('bolt_profile_save'),
+            'method' => Request::METHOD_PUT,
+        ]);
 
-    private function validateUser(User $user, ?string $newPassword): bool
-    {
-        // @todo Validation should be moved to a separate UserValidator
+        $form->handleRequest($request);
+        if ($form->isValid()) {
+            if ($form->getData()->get('plainPassword') !== null) {
+                $user->setPassword($this->passwordEncoder->encodePassword(
+                    $user,
+                    $form->getData()->get('plainPassword')
+                ));
+            }
+            $this->em->flush();
 
-        $usernameValidateOptions = [
-            'options' => [
-                'min_range' => 1,
-            ],
-        ];
+            $url = $this->urlGenerator->generate('bolt_profile_edit');
 
-        // Validate username
-        if (! filter_var(mb_strlen($user->getDisplayName()), FILTER_VALIDATE_INT, $usernameValidateOptions)) {
-            $this->addFlash('danger', 'user.not_valid_username');
-            return false;
+            return new RedirectResponse($url);
         }
 
-        // Validate email
-        if (! filter_var($user->getEmail(), FILTER_VALIDATE_EMAIL)) {
-            $this->addFlash('danger', 'user.not_valid_email');
-            return false;
-        }
-
-        // Validate password
-        if ($newPassword !== null && mb_strlen($newPassword) < 6) {
-            $this->addFlash('danger', 'user.not_valid_password');
-            return false;
-        }
-
-        return true;
+        return $this->renderTemplate('@bolt/users/edit.html.twig', [
+            'display_name' => $user->getDisplayName(),
+            'user' => $user,
+            'form' => $form,
+        ]);
     }
 }
