@@ -263,6 +263,9 @@
     "instaclick/php-webdriver": {
         "version": "1.4.7"
     },
+    "instaclick/php-webdriver": {
+        "version": "1.4.6"
+    },
     "intervention/image": {
         "version": "2.5.1"
     },
@@ -381,7 +384,7 @@
         "version": "2.0.1"
     },
     "php": {
-        "version": "7.2"
+        "version": "7.3"
     },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
@@ -561,6 +564,9 @@
     },
     "ramsey/uuid": {
         "version": "3.9.3"
+    },
+    "ramsey/uuid": {
+        "version": "3.8.0"
     },
     "roave/security-advisories": {
         "version": "dev-master"

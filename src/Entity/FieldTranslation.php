@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bolt\Entity;
 
+use Bolt\Common\Json;
 use Doctrine\ORM\Mapping as ORM;
 use Knp\DoctrineBehaviors\Model\Translatable\TranslationTrait;
 
@@ -21,22 +22,28 @@ class FieldTranslation implements TranslationInterface
      */
     private $id;
 
-    /** @ORM\Column(type="json") */
-    protected $value = [];
+    /**
+     * @ORM\Column(type="field_value")
+     */
+    protected $value;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getValue(): ?array
+    public function getValue()
     {
         return $this->value;
     }
 
     public function setValue($value): self
     {
-        $this->value = (array) $value;
+        if (is_array($value)) {
+            $this->value = Json::dump($value);
+        } else {
+            $this->value = (string) $value;
+        }
 
         return $this;
     }

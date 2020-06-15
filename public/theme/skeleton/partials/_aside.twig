@@ -24,6 +24,7 @@
                 <p>
                 {%- if content_link %}
                    <a href="{{ absolute_link(content_link|e) }}">{{ __('general.phrase.read-more') }}</a>
+                    <a href="{{ relative_path(content_link|e) }}">{{ __('general.phrase.read-more') }}</a>
                 {% endif -%}
                 {%- if edit_link %}
                     / <a href="{{ edit_link }}">{{ __('general.phrase.edit') }}</a>

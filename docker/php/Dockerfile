@@ -51,6 +51,7 @@ RUN extBuildDeps=" \
             mbstring \
             gd \
             pcntl \
+            intl \
             opcache && \
     wget --progress=bar:force --retry-connrefused -t 5 \
     https://github.com/kelseyhightower/confd/releases/download/v${CONFD_VERSION}/confd-${CONFD_VERSION}-linux-amd64 -O /bin/confd && \

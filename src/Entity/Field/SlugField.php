@@ -19,6 +19,11 @@ class SlugField extends Field implements FieldInterface, ScalarCastable
 
     public function setValue($value): parent
     {
+        parent::setValue($value);
+
+        return $this;
+
+        /*
         if (is_array($value)) {
             $value = reset($value);
         }
@@ -32,6 +37,7 @@ class SlugField extends Field implements FieldInterface, ScalarCastable
         parent::setValue([$value]);
 
         return $this;
+         */
     }
 
     public function getSlugUseFields(): array

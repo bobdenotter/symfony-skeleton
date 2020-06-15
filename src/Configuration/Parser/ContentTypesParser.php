@@ -10,6 +10,7 @@ use Bolt\Configuration\Content\ContentType;
 use Bolt\Configuration\Content\FieldType;
 use Bolt\Enum\Statuses;
 use Bolt\Exception\ConfigurationException;
+use Cocur\Slugify\Slugify;
 use Tightenco\Collect\Support\Collection;
 
 class ContentTypesParser extends BaseParser
@@ -62,6 +63,7 @@ class ContentTypesParser extends BaseParser
      */
     protected function parseContentType($key, array $contentType): ?ContentType
     {
+        $slugify = new Slugify();
         // If the key starts with `__`, we ignore it.
         if (mb_substr($key, 0, 2) === '__') {
             return null;
@@ -88,13 +90,13 @@ class ContentTypesParser extends BaseParser
         }
 
         if (! isset($contentType['slug'])) {
-            $contentType['slug'] = Str::slug($contentType['name']);
+            $contentType['slug'] = $slugify->slugify($contentType['name']);
         }
         if (! isset($contentType['name'])) {
             $contentType['name'] = ucwords(preg_replace('/[^a-z0-9]/i', ' ', $contentType['slug']));
         }
         if (! isset($contentType['singular_slug'])) {
-            $contentType['singular_slug'] = Str::slug($contentType['singular_name']);
+            $contentType['singular_slug'] = $slugify->slugify($contentType['singular_name']);
         }
         if (! isset($contentType['singular_name'])) {
             $contentType['singular_name'] = ucwords(preg_replace('/[^a-z0-9]/i', ' ', $contentType['singular_slug']));
@@ -200,8 +202,8 @@ class ContentTypesParser extends BaseParser
         // when adding relations, make sure they're added by their slug. Not their 'name' or 'singular name'.
         if (! empty($contentType['relations']) && is_array($contentType['relations'])) {
             foreach (array_keys($contentType['relations']) as $relkey) {
-                if ($relkey !== Str::slug($relkey)) {
-                    $contentType['relations'][Str::slug($relkey)] = $contentType['relations'][$relkey];
+                if ($relkey !== $slugify->slugify($relkey)) {
+                    $contentType['relations'][$slugify->slugify($relkey)] = $contentType['relations'][$relkey];
                     unset($contentType['relations'][$relkey]);
                 }
             }

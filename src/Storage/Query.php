@@ -4,78 +4,80 @@ declare(strict_types=1);
 
 namespace Bolt\Storage;
 
-use Bolt\Entity\Content;
-use Pagerfanta\Pagerfanta;
+use Bolt\Storage\Exception\QueryErrorException;
+use Bolt\Storage\Parser\ContentFieldParser;
+use Bolt\Storage\Parser\QueryParser;
+use Bolt\Storage\Resolver\QueryFieldResolver;
+use Bolt\Storage\Scope\ScopeEnum;
+use Bolt\Storage\Types\QueryType;
+use GraphQL\GraphQL;
+use GraphQL\Type\Schema;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class Query
 {
-    /** @var ContentQueryParser */
-    protected $parser;
+    private $contentFieldParser;
 
-    /** @var array */
-    protected $scopes = [];
+    private $queryFieldResolver;
 
-    public function __construct(ContentQueryParser $parser)
-    {
-        $this->parser = $parser;
-        $this->scopes = [];
+    private $queryParser;
+
+    public function __construct(
+        ContentFieldParser $contentFieldParser,
+        QueryFieldResolver $queryFieldResolver,
+        QueryParser $queryParser
+    ) {
+        $this->contentFieldParser = $contentFieldParser;
+        $this->queryFieldResolver = $queryFieldResolver;
+        $this->queryParser = $queryParser;
     }
 
-    public function addScope(string $name, QueryScopeInterface $scope): void
+    public function getContent(string $textQuery, array $arguments = []): JsonResponse
     {
-        $this->scopes[$name] = $scope;
+        $content = $this->getQLContent($textQuery, $arguments, ScopeEnum::DEFAULT);
+
+        return new JsonResponse($content);
     }
 
-    public function getScope(string $name): ?QueryScopeInterface
+    public function getContentForTwig(string $textQuery, array $arguments = []): array
     {
-        if (array_key_exists($name, $this->scopes)) {
-            return $this->scopes[$name];
+        return $this->getQLContent($textQuery, $arguments, ScopeEnum::FRONT);
+    }
+
+    private function getQLContent(string $textQuery, array $arguments, string $scope): array
+    {
+        $schema = new Schema([
+            'query' => new QueryType(
+                $this->contentFieldParser,
+                $this->queryFieldResolver,
+                $scope
+            ),
+        ]);
+
+        $returnSingle = isset($arguments['returnsingle']);
+        unset($arguments['returnsingle']);
+
+        $textQuery = $this->queryParser->parseQuery($textQuery, $arguments);
+        $result = GraphQL::executeQuery($schema, $textQuery);
+
+        if (empty($result->errors) === false) {
+            throw new QueryErrorException($result->errors);
         }
 
-        return null;
-    }
+        if ($scope === ScopeEnum::FRONT) {
+            $content = reset($result->toArray()['data']);
 
-    /**
-     * getContent based on a 'human readable query'.
-     *
-     * Used by the twig command {% setcontent %} but also directly.
-     * For reference refer to @link https://docs.bolt.cm/templating/content-fetching
-     *
-     * @return Pagerfanta|Content|null
-     */
-    public function getContent(string $textQuery, array $parameters = [])
-    {
-        $this->parser->setQuery($textQuery);
-        $this->parser->setParameters($parameters);
+            if (empty($content)) {
+                return [];
+            }
 
-        return $this->parser->fetch();
-    }
+            if ($returnSingle || (count($content) === 1 && isset($arguments['limit']) === false)) {
+                return reset($content);
+            }
 
-    /**
-     * @return Pagerfanta|Content|null
-     */
-    public function getContentByScope(string $scopeName, string $textQuery, array $parameters = [])
-    {
-        $scope = $this->getScope($scopeName);
-        if ($scope) {
-            $this->parser->setQuery($textQuery);
-            $this->parser->setParameters($parameters);
-            $this->parser->setScope($scope);
-
-            return $this->parser->fetch();
+            return $content;
         }
 
-        return null;
-    }
-
-    /**
-     * Helper to be called from Twig that is passed via a TwigRecordsView rather than the raw records.
-     *
-     * @param string $textQuery  The base part like `pages` or `pages/1`
-     * @param array  $parameters Parameters like `printquery` and `paging`, but also `where` parameters taken from `... where { foo: bar } ...`
-     */
-    public function getContentForTwig(string $textQuery, array $parameters = [])
-    {
-        return $this->getContentByScope('frontend', $textQuery, $parameters);
+        return $result->toArray();
     }
 }

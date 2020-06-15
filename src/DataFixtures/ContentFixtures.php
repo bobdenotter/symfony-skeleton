@@ -10,9 +10,11 @@ use Bolt\Configuration\Content\ContentType;
 use Bolt\Configuration\FileLocations;
 use Bolt\Entity\Content;
 use Bolt\Entity\Field;
+use Bolt\Entity\User;
 use Bolt\Enum\Statuses;
 use Bolt\Repository\FieldRepository;
 use Bolt\Utils\FakeContent;
+use Cocur\Slugify\Slugify;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -88,7 +90,7 @@ class ContentFixtures extends BaseFixture implements DependentFixtureInterface, 
                 } else {
                     $author = $this->getRandomReference('user');
                 }
-
+                /** @var User $author */
                 $content = new Content();
                 $content->setDefinition($contentType);
                 $content->setContentType($contentType['slug']);
@@ -201,22 +203,19 @@ class ContentFixtures extends BaseFixture implements DependentFixtureInterface, 
         return $statuses[array_rand($statuses)];
     }
 
-    private function getValuesforFieldType(string $name, DeepCollection $field, bool $singleton): array
+    private function getValuesforFieldType(string $name, DeepCollection $field, bool $singleton)
     {
         $nb = $singleton ? 8 : 4;
 
         switch ($field['type']) {
             case 'html':
-                $data = [FakeContent::generateHTML($nb)];
-
+                $data = FakeContent::generateHTML($nb);
                 break;
             case 'markdown':
-                $data = [FakeContent::generateMarkdown($nb)];
-
+                $data = FakeContent::generateMarkdown($nb);
                 break;
             case 'textarea':
-                $data = [$this->faker->paragraphs(3, true)];
-
+                $data = $this->faker->paragraphs(3, true);
                 break;
             case 'image':
                 $randomImage = $this->imagesIndex->random();
@@ -237,30 +236,26 @@ class ContentFixtures extends BaseFixture implements DependentFixtureInterface, 
 
                 break;
             case 'slug':
-                $data = $this->lastTitle ?? [$this->faker->sentence(3, true)];
-
+                $data = (new Slugify())->slugify(
+                    $this->lastTitle ?? $this->faker->sentence(3, true)
+                );
                 break;
             case 'text':
                 $words = isset($field['slug']) && in_array($field['slug'], ['title', 'heading'], true) ? 3 : 7;
-                $data = [$this->faker->sentence($words, true)];
-
+                $data = $this->faker->sentence($words, true);
                 break;
             case 'email':
-                $data = [$this->faker->email];
-
+                $data = $this->faker->email;
                 break;
             case 'templateselect':
                 $data = [];
-
                 break;
             case 'date':
             case 'datetime':
-                $data = [$this->faker->dateTime()->format('c')];
-
+                $data = $this->faker->dateTime()->format('c');
                 break;
             case 'number':
-                $data = [$this->faker->numberBetween(-100, 1000)];
-
+                $data = $this->faker->numberBetween(-100, 1000);
                 break;
             case 'checkbox':
                 $data = [$this->faker->numberBetween(0, 1)];
@@ -271,7 +266,6 @@ class ContentFixtures extends BaseFixture implements DependentFixtureInterface, 
                 for ($i = 1; $i < 5; $i++) {
                     $data[$this->faker->sentence(1)] = $this->faker->sentence(4, true);
                 }
-
                 break;
             case 'imagelist':
                 $data = [];
@@ -295,10 +289,12 @@ class ContentFixtures extends BaseFixture implements DependentFixtureInterface, 
                         'media' => '',
                     ];
                 }
-
+                break;
+            case 'checkbox':
+                $data = (string) rand(0, 1);
                 break;
             default:
-                $data = [$this->faker->sentence(6, true)];
+                $data = $this->faker->sentence(6, true);
         }
 
         if ($name === 'title' || $name === 'heading') {

@@ -74,19 +74,6 @@ services:
 
     Bolt\Menu\FrontendMenuBuilderInterface: '@Bolt\Menu\FrontendMenuBuilder'
 
-    # Needed for SetContent from bolt/core
-    Bolt\Storage\ContentQueryParser:
-        calls:
-            -
-                method: addService
-                arguments: [ 'select', '@Bolt\Storage\SelectQuery' ]
-
-    Bolt\Storage\Query:
-        calls:
-            -
-                method: addScope
-                arguments: [ 'frontend', '@Bolt\Storage\FrontendQueryScope' ]
-
     Bolt\Twig\DumpExtension:
         arguments: ["%kernel.environment%"]
 
@@ -105,3 +92,17 @@ services:
     Twig\Extension\StringLoaderExtension: ~
 
     Symfony\Component\ErrorHandler\ErrorRenderer\ErrorRendererInterface: '@error_handler.error_renderer.html'
+
+    # @deprecated since Bolt 4.0.0, use Bolt\Controller\ErrorController instead
+    Bolt\Controller\ExceptionController:
+        public: true
+        arguments:
+            $debug: '%kernel.debug%'
+
+    _instanceof:
+        Bolt\Storage\Builder\ContentBuilder\ContentArgumentStrategyInterface:
+            tags: ['argument_strategy']
+
+    Bolt\Storage\Strategy\ContentArgumentStrategyCollection:
+        arguments:
+            - !tagged_iterator argument_strategy

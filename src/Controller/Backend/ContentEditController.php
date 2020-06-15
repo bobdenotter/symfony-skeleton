@@ -139,6 +139,20 @@ class ContentEditController extends TwigAwareController implements BackendZoneIn
     }
 
     /**
+     * @Route("/edit/{slug}", name="bolt_content_edit_by_slug", methods={"GET"})
+     */
+    public function editBySlug(Request $request, Content $content): Response
+    {
+        $twigvars = [
+            'record' => $content,
+            'locales' => $content->getLocales(),
+            'currentlocale' => $this->getEditLocale($request, $content),
+        ];
+
+        return $this->renderTemplate('@bolt/content/edit.html.twig', $twigvars);
+    }
+
+    /**
      * @Route("/edit/{id}", name="bolt_content_edit_post", methods={"POST"}, requirements={"id": "\d+"})
      */
     public function save(Request $request, ?Content $content = null): Response

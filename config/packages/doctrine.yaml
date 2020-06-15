@@ -7,6 +7,8 @@ parameters:
 
 doctrine:
     dbal:
+        types:
+            field_value: Bolt\Doctrine\Mapping\FieldValueType
         charset: utf8mb4
         url: '%env(resolve:DATABASE_URL)%'
 
@@ -15,8 +17,8 @@ doctrine:
         # server_version: '3.15'
 
         # For MySQL
-        # driver: 'pdo_mysql'
-        # server_version: 5.7	
+        driver: 'pdo_mysql'
+        server_version: 5.7
 
     orm:
         auto_generate_proxy_classes: '%kernel.debug%'
