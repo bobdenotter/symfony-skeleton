@@ -151,6 +151,7 @@ thumbnails:
     cropping: crop
     save_files: true
     allow_upscale: false
+    notfound_image: '/assets/images/placeholder.png'
 
 # File permissions for read/write/execute to set on folders and files that are
 # created. The exact permissions you should be setting depends on the system

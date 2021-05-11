@@ -40,7 +40,7 @@ class ThumbnailHelper
     public function path(?string $filename = null, ?int $width = null, ?int $height = null, ?string $location = null, ?string $path = null, ?string $fit = null): string
     {
         if (! $filename) {
-            return '/assets/images/placeholder.png';
+            return $this->config->get('general/thumbnails/notfound_image', '/assets/images/placeholder.png');
         }
 
         if ($path) {
