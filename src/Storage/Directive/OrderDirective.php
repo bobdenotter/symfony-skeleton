@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Bolt\Storage\Directive;
 
+use Bolt\Entity\Field;
 use Bolt\Storage\FieldQueryUtils;
 use Bolt\Storage\QueryInterface;
 use Bolt\Twig\Notifications;
 use Bolt\Utils\ContentHelper;
 use Bolt\Utils\LocaleHelper;
+use Doctrine\ORM\EntityManagerInterface;
 use Twig\Environment;
 
 /**
@@ -31,13 +33,18 @@ class OrderDirective
 
     /** @var FieldQueryUtils */
     private $utils;
+    /**
+     * @var EntityManagerInterface
+     */
+    private $em;
 
-    public function __construct(LocaleHelper $localeHelper, Environment $twig, Notifications $notifications, FieldQueryUtils $utils)
+    public function __construct(LocaleHelper $localeHelper, Environment $twig, Notifications $notifications, FieldQueryUtils $utils, EntityManagerInterface $em)
     {
         $this->localeHelper = $localeHelper;
         $this->twig = $twig;
         $this->notifications = $notifications;
         $this->utils = $utils;
+        $this->em = $em;
     }
 
     public function __invoke(QueryInterface $query, string $order): void
@@ -93,6 +100,35 @@ class OrderDirective
                 ->setParameter($taxonomySlug, $order)
                 ->addOrderBy($taxonomy . '.name', $direction);
         } elseif ($this->isActualField($query, $order)) {
+
+
+            $expression = $this->em->createQueryBuilder()
+                    ->select('field')
+                    ->from(Field::class, 'field')
+                    ->leftJoin('field.content', 'field_content')
+                    ->where('field.name = :field');
+
+            $expression = 'COALESCE((' . $expression->__toString() . '), 500)';
+
+            $query->getQueryBuilder()->setParameter('field', 'price');
+
+            // Note the `lower()` in the `addOrderBy()`. It is essential to sorting the
+            // results correctly. See also https://github.com/bolt/core/issues/1190
+            // again: lower breaks postgresql jsonb compatibility, first cast as txt
+            // cast as TEXT or CHAR, depending on SQL support. See Bolt\Doctrine\Query\Cast.php
+            // and https://github.com/bolt/core/issues/2241
+            dump($expression);
+            $query
+                ->getQueryBuilder()
+                ->addOrderBy('cast('.$expression.' as text)', $direction);
+
+//            dd('lower(CAST(' . $expression . ' as TEXT))');
+
+//            $query->getQueryBuilder()
+//                ->addOrderBy($expression);
+
+            return;
+
             $fieldsAlias = 'fields_order_' . $query->getIndex();
             $fieldAlias = 'order_' . $query->getIndex();
             $translationsAlias = 'translations_order_' . $query->getIndex();

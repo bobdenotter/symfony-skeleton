@@ -34,6 +34,7 @@ doctrine:
                 JSON_EXTRACT: Bolt\Doctrine\Functions\JsonExtract
                 JSON_GET_TEXT: Scienta\DoctrineJsonFunctions\Query\AST\Functions\Postgresql\JsonGetText
                 CAST: Bolt\Doctrine\Query\Cast
+                COALESCE: Bolt\Doctrine\Query\CoalesceExpression
             numeric_functions:
                 RAND: Bolt\Doctrine\Functions\Rand
 

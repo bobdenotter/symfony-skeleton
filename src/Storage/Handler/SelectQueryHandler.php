@@ -73,7 +73,9 @@ class SelectQueryHandler
 
     private function createPaginator(?Request $request, Query $query, int $amountPerPage, ?int $page = null): Pagerfanta
     {
-        $paginator = new Pagerfanta(new DoctrineORMAdapter($query, true, true));
+//        dd($query->getDQL());
+
+        $paginator = new Pagerfanta(new DoctrineORMAdapter($query, false, true));
         $paginator->setMaxPerPage($amountPerPage);
 
         // If current page was not set explicitly.

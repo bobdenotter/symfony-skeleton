@@ -49,7 +49,7 @@ class Cast extends FunctionNode
     {
         $parser->match(Lexer::T_IDENTIFIER);
         $parser->match(Lexer::T_OPEN_PARENTHESIS);
-        $this->first = $parser->ArithmeticPrimary();
+        $this->first = null;// THIS NEEDS TO BE OUR CUSTOM COALESCE. HOW?!
         $parser->match(Lexer::T_AS);
         $parser->match(Lexer::T_IDENTIFIER);
         $this->second = $parser->getLexer()->token['value'];
