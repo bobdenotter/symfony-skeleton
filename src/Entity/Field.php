@@ -28,9 +28,21 @@ use Twig\Markup;
  *              "normalization_context"={"groups"={"get_field"}}
  *         },
  *     },
- *     collectionOperations={"get"},
- *     itemOperations={"get"},
- *     graphql={"item_query", "collection_query"}
+ *     collectionOperations={
+ *          "get"={"security"="is_granted('api:get')"},
+ *          "post"={"security"="is_granted(‘api:post’)"}
+ *     },
+ *     itemOperations={
+ *          "get"={"security"="is_granted('api:get')"},
+ *          "put"={"security"="is_granted('api:post')"},
+ *          "delete"={"security"="is_granted('api:delete')"}
+ *     },
+ *     graphql={
+ *          "item_query"={"security"="is_granted('api:get')"},
+ *          "collection_query"={"security"="is_granted('api:get')"},
+ *          "create"={"security"="is_granted('api:post')"},
+ *          "delete"={"security"="is_granted('api:delete')"}
+ *     }
  * )
  * @ApiFilter(SearchFilter::class)
  * @ORM\Entity(repositoryClass="Bolt\Repository\FieldRepository")

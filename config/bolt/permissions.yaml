@@ -46,6 +46,9 @@ global:
     list_files:config: [ ROLE_ADMIN ] # should probably not be used?
     list_files:files: [ ROLE_EDITOR ] # get list of files (images?) available for use as site-content
     list_files:themes: [ ROLE_ADMIN ] # should probably not be used?
+    api:get: [ ROLE_WEBSERVICE ]
+    api:post: [ ROLE_WEBSERVICE ]
+    api:delete: [ ROLE_WEBSERVICE ]
 
 
 # For content type related actions, permissions can be set individually for

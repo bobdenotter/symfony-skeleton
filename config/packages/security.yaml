@@ -6,6 +6,7 @@ security:
         ROLE_EDITOR: [ROLE_USER]
         # ROLE_USER is assigned to Bolt Entity Users if no roles have been set
         ROLE_USER: []
+        ROLE_WEBSERVICE: []
 
     encoders:
         Bolt\Entity\User: auto

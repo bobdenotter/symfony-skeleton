@@ -13,9 +13,21 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ApiResource(
  *     normalizationContext={"groups"={"get_relation"}},
- *     collectionOperations={"get"},
- *     itemOperations={"get"},
- *     graphql={"item_query", "collection_query"}
+ *     collectionOperations={
+ *          "get"={"security"="is_granted('api:get')"},
+ *          "post"={"security"="is_granted(‘api:post’)"}
+ *     },
+ *     itemOperations={
+ *          "get"={"security"="is_granted('api:get')"},
+ *          "put"={"security"="is_granted('api:post')"},
+ *          "delete"={"security"="is_granted('api:delete')"}
+ *     },
+ *     graphql={
+ *          "item_query"={"security"="is_granted('api:get')"},
+ *          "collection_query"={"security"="is_granted('api:get')"},
+ *          "create"={"security"="is_granted('api:post')"},
+ *          "delete"={"security"="is_granted('api:delete')"}
+ *     }
  * )
  * @ORM\Entity(repositoryClass="Bolt\Repository\RelationRepository")
  * @ORM\Table(indexes={
